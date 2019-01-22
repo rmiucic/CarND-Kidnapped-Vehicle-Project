@@ -202,7 +202,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     double particle_prob=1;
     for(unsigned int n=0;n<obs_prob.size();n++)
     {
-      particle_prob=obs_prob[n];
+      particle_prob=particle_prob*obs_prob[n];
     }
     particles[i].weight=particle_prob;
     SetAssociations(particles[i],associations_tmp, sense_x_tmp,sense_y_tmp);

@@ -146,6 +146,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
    */
   for ( int i = 0; i<num_particles; i++)
   {
+    //Convert observations to world coordinate system
     LandmarkObs obs_map; //temporary variable
     vector<LandmarkObs> observations_map;
     for(unsigned int j=0;j<observations.size();j++)
@@ -158,6 +159,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       observations_map.push_back(obs_map);
     }
 
+    //select predicted landmarks that are in range of the sensor 
     vector<LandmarkObs> predicted_map;
     LandmarkObs prd_map; //temporary variable
     for(unsigned int k=0;k<map_landmarks.landmark_list.size();k++)
@@ -170,6 +172,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
         predicted_map.push_back(prd_map);
       }
     }
+    //Associate each observation to coresponding landmark
     dataAssociation(predicted_map,observations_map);
     vector<int> associations_tmp;
     vector<double> sense_x_tmp;

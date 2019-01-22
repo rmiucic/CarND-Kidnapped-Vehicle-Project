@@ -67,7 +67,6 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
   
   std::default_random_engine gen;
 
-
   for (int i = 0; i<num_particles; i++)
   {
     if(yaw_rate==0.0)
@@ -77,7 +76,7 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
       particles[i].theta=particles[i].theta;
     }
     else
-    {
+    {//move each particle filter according to bicycle model
       particles[i].x=particles[i].x+velocity/yaw_rate*(sin(particles[i].theta+yaw_rate*delta_t)-sin(particles[i].theta));
       particles[i].y=particles[i].y+velocity/yaw_rate*(cos(particles[i].theta)-cos(particles[i].theta+yaw_rate*delta_t));
       particles[i].theta=particles[i].theta+yaw_rate*delta_t;
@@ -88,10 +87,12 @@ void ParticleFilter::prediction(double delta_t, double std_pos[],
     // This line Create normal distributions for y and theta
     normal_distribution<double> dist_y(particles[i].y, std_pos[1]);
     normal_distribution<double> dist_theta(particles[i].theta, std_pos[2]);
-    particles[i].x=particles[i].x+dist_x(gen);
-    particles[i].y=particles[i].y+dist_y(gen);
-    particles[i].theta=particles[i].theta+dist_theta(gen);
+    //particle filter x,y, and theta is draw from gausian distribution
+    particles[i].x=dist_x(gen);
+    particles[i].y=dist_y(gen);
+    particles[i].theta=dist_theta(gen);
   }
+
 }
 
 void ParticleFilter::dataAssociation(vector<LandmarkObs> predicted, 
@@ -153,7 +154,7 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
                  -(sin(particles[i].theta) * observations[j].y);
       obs_map.y=particles[i].y+(sin(particles[i].theta)*observations[j].x)
                  +(cos(particles[i].theta) * observations[j].y);
-      //obs_map.id=observations[j].id;
+
       observations_map.push_back(obs_map);
     }
 
@@ -184,12 +185,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
       {
         if(predicted_map[m].id==observations_map[l].id)
         {        
-      	  //std::cout << std_landmark[0] << std::endl;
-      	  //std::cout << std_landmark[1] << std::endl;
-      	  //std::cout << observations_map[l].x << std::endl;
-      	  //std::cout << observations_map[l].y << std::endl;
-      	  //std::cout << predicted_map[m].x << std::endl;
-      	  //std::cout << predicted_map[m].y << std::endl;
           obs_prob.push_back(multiv_prob(std_landmark[0],
                                   std_landmark[1], 
                                   observations_map[l].x, 
@@ -208,7 +203,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
     }
     particles[i].weight=particle_prob;
     SetAssociations(particles[i],associations_tmp, sense_x_tmp,sense_y_tmp);
-    //particles[i]
   }//end(int i = 0; i<num_particles; i++)
   //normalize particle weights 
   double weights_sum=0;
@@ -220,7 +214,6 @@ void ParticleFilter::updateWeights(double sensor_range, double std_landmark[],
   {
     particles[p].weight=particles[p].weight/weights_sum;
   }
-  //std::cout << 'bla' << std::endl;
 }
 
 void ParticleFilter::resample() {
@@ -239,10 +232,12 @@ void ParticleFilter::resample() {
   std::default_random_engine generator;
   std::discrete_distribution<int> distribution (weights_all.begin(),weights_all.end());
   
+  vector<Particle> particles_tmp;
   for(unsigned int p=0;p<particles.size();p++)
   {
-    particles[p]=particles[distribution(generator)];
+    particles_tmp.push_back(particles[distribution(generator)]);
   }
+  particles=particles_tmp;
   
 }
 

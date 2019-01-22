@@ -267,4 +267,4 @@ inline double multiv_prob(double sig_x, double sig_y, double x_obs, double y_obs
   return weight;
 }
 
-#endif  // HELPER_FUNCTIONS_H_
+#endif
